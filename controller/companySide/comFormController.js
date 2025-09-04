@@ -1,6 +1,6 @@
 // controller/comFormController.js
 const path = require("path");
-const Profile = require("../../models/comFormModel");
+const Profile = require("../../models/companySide/comFormModel");
 
 /**
  * 🧩 helper: image ka absolute URL bana do
