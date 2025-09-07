@@ -9,9 +9,12 @@ const toAbsoluteUrl = (req, filePath) => {
 // ✅ Create Product Detail
 exports.createProductDetail = async (req, res) => {
   try {
-    const { productName, productDescription, price, stock, discount, category } = req.body;
+    const { productName, productDescription, price, stock, discount, category, brandId } = req.body;
 
-    // multiple images from multer
+    if (!brandId) {
+      return res.status(400).json({ error: "❌ brandId is required" });
+    }
+
     const images = req.files ? req.files.map(file => file.path) : [];
 
     const newProduct = new ProductDetail({
@@ -22,7 +25,8 @@ exports.createProductDetail = async (req, res) => {
       discount,
       category,
       images,
-      user: req.user.id, // from authMiddleware
+      brand: brandId, // 👈 link to brand
+      user: req.user.id,
     });
 
     await newProduct.save();
@@ -33,13 +37,15 @@ exports.createProductDetail = async (req, res) => {
   }
 };
 
-// ✅ Get all products of logged in user
-exports.getAllProductDetails = async (req, res) => {
+// ✅ Get products of a specific brand
+exports.getProductDetails = async (req, res) => {
   try {
-    const products = await ProductDetail.find({ user: req.user.id });
+    const { brandId } = req.params;
+
+    const products = await ProductDetail.find({ user: req.user.id, brand: brandId }).lean();
 
     const shaped = products.map(p => ({
-      ...p._doc,
+      ...p,
       images: p.images.map(img => toAbsoluteUrl(req, img)),
     }));
 

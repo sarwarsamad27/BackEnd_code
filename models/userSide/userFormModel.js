@@ -14,4 +14,4 @@ const profileSchema = new mongoose.Schema({
   image: { type: String }, // yahan sirf file ka path store hoga
 });
 
-module.exports = mongoose.model("ComProfile", profileSchema);
+module.exports = mongoose.model("UserProfile", profileSchema);

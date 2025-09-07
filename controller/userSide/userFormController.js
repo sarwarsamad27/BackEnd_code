@@ -1,6 +1,6 @@
 // controller/comFormController.js
 const path = require("path");
-const Profile = require("../../models/companySide/comFormModel");
+const Profile = require("../../models/userSide/userFormModel");
 
 /**
  * 🧩 helper: image ka absolute URL bana do
@@ -20,7 +20,7 @@ const toAbsoluteImageUrl = (req, imagePath) => {
  * 📥 Body: form-data (image file + name/email/mobile/address/description)
  * ✅ Creates/overwrites the logged-in user's profile
  */
-exports.createComProfile = async (req, res) => {
+exports.createUserProfile = async (req, res) => {
   try {
     const { name, email, mobile, address, description } = req.body;
     const image = req.file ? req.file.path : null;
@@ -59,7 +59,7 @@ exports.createComProfile = async (req, res) => {
  * 🔐 Protected: token required
  * 🧾 Returns the complete profile of the logged-in user (ComProfile)
  */
-exports.getComProfile = async (req, res) => {
+exports.getUserProfile = async (req, res) => {
   try {
     const profile = await Profile.findOne({ user: req.user.id || req.user });
 
@@ -84,7 +84,7 @@ exports.getComProfile = async (req, res) => {
  * 🔐 Protected (admin-only ideally): sare profiles list
  * Useful agar list dikhani ho.
  */
-exports.getAllComProfiles = async (req, res) => {
+exports.getAllUserProfiles = async (req, res) => {
   try {
     const profiles = await Profile.find().lean();
     const shaped = profiles.map((p) => ({

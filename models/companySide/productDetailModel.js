@@ -5,10 +5,14 @@ const productDetailSchema = new mongoose.Schema({
   productDescription: { type: String, required: true },
   price: { type: Number, required: true },
   stock: { type: Number, required: true },
-  discount: { type: Number, default: 0 }, // optional, default 0
+  discount: { type: Number, default: 0 },
   category: { type: String, required: true },
-  images: [{ type: String }], // multiple image paths/urls
-  user: { type: mongoose.Schema.Types.ObjectId, ref: "User" }, // link with logged in user
-}, { timestamps: true });
+  images: [{ type: String }],
+
+  // 🔗 Brand ke sath relation
+  brand: { type: mongoose.Schema.Types.ObjectId, ref: "Product", required: true },
+
+  user: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
+});
 
 module.exports = mongoose.model("ProductDetail", productDetailSchema);
