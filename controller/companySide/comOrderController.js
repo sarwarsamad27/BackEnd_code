@@ -3,7 +3,7 @@ const Order = require("../../models/userSide/orderModel");
 // ✅ Get company orders
 exports.getCompanyOrders = async (req, res) => {
   try {
-    const orders = await Order.find({ company: req.user.id }).populate("products.product");
+    const orders = await Order.find().populate("products.product");
     res.json({ count: orders.length, orders });
   } catch (err) {
     res.status(500).json({ error: err.message });
