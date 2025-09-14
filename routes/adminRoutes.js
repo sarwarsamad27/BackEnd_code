@@ -1,4 +1,3 @@
-const authMiddleware = require("../middleware/authMiddleWare");
 const { getAllOrders, verifyOrder, markReceived } = require("../controller/adminSide/orderController");
 
 const router = require("express").Router();
@@ -6,13 +5,13 @@ const router = require("express").Router();
 
 
 // ✅ get all orders
-router.get("/orders", authMiddleware, getAllOrders);
+router.get("/orders", getAllOrders);
 
 // ✅ verify order
-router.put("/order/:id/verify", authMiddleware, verifyOrder);
+router.put("/order/:id/verify", verifyOrder);
 
 // ✅ mark received
-router.put("/order/:id/received", authMiddleware, markReceived);
+router.put("/order/:id/received", markReceived);
 
 
 
