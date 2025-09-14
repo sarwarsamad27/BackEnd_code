@@ -16,7 +16,7 @@ exports.addFavourite = async (req, res) => {
       return res.status(400).json({ error: "❌ productId is required" });
     }
 
-    const fav = new Favourite({ product: productId });
+    const fav = new Favourite({ user: req.user.id, product: productId });
     await fav.save();
 
     res.status(201).json({ message: "✅ Product added to favourites" });
@@ -33,7 +33,7 @@ exports.addFavourite = async (req, res) => {
 exports.removeFavourite = async (req, res) => {
   try {
     const { productId } = req.params;
-    await Favourite.findOneAndDelete({product: productId });
+    await Favourite.findOneAndDelete({ user: req.user.id, product: productId });
     res.json({ message: "🗑️ Removed from favourites" });
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -43,7 +43,7 @@ exports.removeFavourite = async (req, res) => {
 // ✅ Get User's Favourites (with product + company info)
 exports.getFavourites = async (req, res) => {
   try {
-    const favourites = await Favourite.find()
+    const favourites = await Favourite.find({ user: req.user.id })
       .populate("product")
       .lean();
 

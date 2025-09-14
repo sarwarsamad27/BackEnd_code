@@ -42,7 +42,7 @@ exports.getProductDetails = async (req, res) => {
   try {
     const { brandId } = req.params;
 
-    const products = await ProductDetail.find({brand: brandId }).lean();
+    const products = await ProductDetail.find({ user: req.user.id, brand: brandId }).lean();
 
     const shaped = products.map(p => ({
       ...p,

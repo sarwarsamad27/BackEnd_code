@@ -61,7 +61,7 @@ exports.createComProfile = async (req, res) => {
  */
 exports.getComProfile = async (req, res) => {
   try {
-    const profile = await Profile.findOne();
+    const profile = await Profile.findOne({ user: req.user.id || req.user });
 
     if (!profile) {
       return res.status(404).json({ message: "Profile not found" });
