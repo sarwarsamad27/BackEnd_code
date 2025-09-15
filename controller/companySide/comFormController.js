@@ -58,15 +58,23 @@ exports.createComProfile = async (req, res) => {
  * 🔐 Protected: token required
  * 🧾 Returns the complete profile of the logged-in user (ComProfile)
  */
+// controller/comFormController.js
+
 exports.getComProfile = async (req, res) => {
   try {
+    // agar login wala user ka data chahiye to req.user se lo
+    const email = req.user?.email; // <-- authMiddleware se aata hai
+    if (!email) {
+      return res.status(400).json({ message: "Email not found in request" });
+    }
+
     const profile = await Profile.findOne({ email });
 
     if (!profile) {
       return res.status(404).json({ message: "Profile not found" });
     }
 
-    // absolute URL convert
+    // image ko hamesha absolute URL me convert karo
     const result = {
       ...profile.toObject(),
       image: toAbsoluteImageUrl(req, profile.image),
