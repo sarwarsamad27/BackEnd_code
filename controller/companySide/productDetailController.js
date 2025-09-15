@@ -6,13 +6,13 @@ const toAbsoluteUrl = (req, filePath) => {
   return `${req.protocol}://${req.get("host")}/${filePath.replace(/\\/g, "/")}`;
 };
 
-// ✅ Create Product Detail
+// ✅ Create Product Detail (no security)
 exports.createProductDetail = async (req, res) => {
   try {
-    const { productName, productDescription, price, stock, discount, category, brandId } = req.body;
+    const { productName, productDescription, price, stock, discount, category, brandId, userId } = req.body;
 
-    if (!brandId) {
-      return res.status(400).json({ error: "❌ brandId is required" });
+    if (!brandId || !userId) {
+      return res.status(400).json({ error: "❌ brandId and userId are required" });
     }
 
     const images = req.files ? req.files.map(file => file.path) : [];
@@ -26,7 +26,7 @@ exports.createProductDetail = async (req, res) => {
       category,
       images,
       brand: brandId, // 👈 link to brand
-      user: req.user.id,
+      user: userId,   // 👈 ab userId body me bhejna hoga
     });
 
     await newProduct.save();
@@ -37,12 +37,16 @@ exports.createProductDetail = async (req, res) => {
   }
 };
 
-// ✅ Get products of a specific brand
+// ✅ Get products of a specific brand (no token)
 exports.getProductDetails = async (req, res) => {
   try {
-    const { brandId } = req.params;
+    const { brandId, userId } = req.query;
 
-    const products = await ProductDetail.find({ user: req.user.id, brand: brandId }).lean();
+    if (!brandId || !userId) {
+      return res.status(400).json({ error: "❌ brandId and userId are required" });
+    }
+
+    const products = await ProductDetail.find({ user: userId, brand: brandId }).lean();
 
     const shaped = products.map(p => ({
       ...p,
@@ -55,14 +59,16 @@ exports.getProductDetails = async (req, res) => {
   }
 };
 
-// ✅ Update Product by ID
+// ✅ Update Product by ID (no token)
 exports.updateProductDetail = async (req, res) => {
   try {
     const { id } = req.params;
+    const { productName, productDescription, price, stock, discount, category, userId } = req.body;
 
-    const { productName, productDescription, price, stock, discount, category } = req.body;
+    if (!userId) {
+      return res.status(400).json({ error: "❌ userId is required" });
+    }
 
-    // Agar new images upload hui hain to unhe update karo
     let updateData = {
       productName,
       productDescription,
@@ -77,7 +83,7 @@ exports.updateProductDetail = async (req, res) => {
     }
 
     const updated = await ProductDetail.findOneAndUpdate(
-      { _id: id, user: req.user.id }, // sirf apne product update karega
+      { _id: id, user: userId }, // ab userId body se aayega
       updateData,
       { new: true }
     );
@@ -92,12 +98,17 @@ exports.updateProductDetail = async (req, res) => {
   }
 };
 
-// ✅ Delete Product by ID
+// ✅ Delete Product by ID (no token)
 exports.deleteProductDetail = async (req, res) => {
   try {
     const { id } = req.params;
+    const { userId } = req.query;
 
-    const deleted = await ProductDetail.findOneAndDelete({ _id: id, user: req.user.id });
+    if (!userId) {
+      return res.status(400).json({ error: "❌ userId is required" });
+    }
+
+    const deleted = await ProductDetail.findOneAndDelete({ _id: id, user: userId });
 
     if (!deleted) {
       return res.status(404).json({ error: "❌ Product not found or not authorized" });

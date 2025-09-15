@@ -3,18 +3,21 @@ const nodemailer = require("nodemailer");
 const ProductDetail = require("../../models/companySide/productDetailModel");
 const ComProfile = require("../../models/companySide/comFormModel");
 
-// ✅ Order create + Email send (User + Company)
+// ✅ Order create + Email send (User + Company) — no auth
 exports.createOrder = async (req, res) => {
   try {
-    const { name, email, phone, city, postalCode, address, products } = req.body;
+    const { userId, name, email, phone, city, postalCode, address, products } = req.body;
 
+    if (!userId) {
+      return res.status(400).json({ error: "❌ userId is required" });
+    }
     if (!products || products.length === 0) {
       return res.status(400).json({ error: "❌ Products are required" });
     }
 
     // ✅ order create in DB
     const order = await Order.create({
-      user: req.user.id,
+      user: userId,
       name,
       email,
       phone,
@@ -111,12 +114,15 @@ exports.createOrder = async (req, res) => {
   }
 };
 
-
-
-// ✅ user ke orders get
+// ✅ user ke orders get — no auth
 exports.getMyOrders = async (req, res) => {
   try {
-    const orders = await Order.find({ user: req.user.id }).populate("products.product");
+    const { userId } = req.params;
+    if (!userId) {
+      return res.status(400).json({ error: "❌ userId is required" });
+    }
+
+    const orders = await Order.find({ user: userId }).populate("products.product");
     res.json({ count: orders.length, orders });
   } catch (err) {
     res.status(500).json({ error: err.message });

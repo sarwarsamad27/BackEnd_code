@@ -1,48 +1,45 @@
-// controller/comFormController.js
 const path = require("path");
 const Profile = require("../../models/userSide/userFormModel");
 
 /**
  * 🧩 helper: image ka absolute URL bana do
- * DB me hum relative path save karte hain (e.g., uploads/169...jpg)
- * Frontend ko full URL chahiye (http://host/uploads/169...jpg)
  */
 const toAbsoluteImageUrl = (req, imagePath) => {
   if (!imagePath) return null;
-  // ensure forward slashes in URL
   const clean = imagePath.replace(/\\/g, "/");
   return `${req.protocol}://${req.get("host")}/${clean}`;
 };
 
 /**
- * POST /api/auth/profile
- * 🔐 Protected: token required (authMiddleware)
- * 📥 Body: form-data (image file + name/email/mobile/address/description)
- * ✅ Creates/overwrites the logged-in user's profile
+ * POST /api/auth/userprofile
+ * 📥 Body: form-data (image file + name/email/mobile/address/description + userId)
+ * ✅ Creates/overwrites the user's profile (no auth)
  */
 exports.createUserProfile = async (req, res) => {
   try {
-    const { name, email, mobile, address, description } = req.body;
+    const { userId, name, email, mobile, address, description } = req.body;
+    if (!userId) {
+      return res.status(400).json({ error: "❌ userId is required" });
+    }
+
     const image = req.file ? req.file.path : null;
 
-    // Agar user ka profile already exist hai to update, warna create
     const update = {
+      user: userId,
       name,
       email,
       mobile,
       address,
       description,
       ...(image && { image }),
-      user: req.user.id || req.user, // depends on your middleware shape
     };
 
     const profile = await Profile.findOneAndUpdate(
-      { user: req.user.id || req.user },
+      { user: userId },
       update,
       { upsert: true, new: true, setDefaultsOnInsert: true }
     );
 
-    // response me absolute image URL bhejo
     const result = {
       ...profile.toObject(),
       image: toAbsoluteImageUrl(req, profile.image),
@@ -55,34 +52,36 @@ exports.createUserProfile = async (req, res) => {
 };
 
 /**
- * GET /api/auth/profile/com
- * 🔐 Protected: token required
- * 🧾 Returns the complete profile of the logged-in user (ComProfile)
+ * GET /api/auth/userprofile/:userId
+ * 🧾 Returns the profile of the given user
  */
 exports.getUserProfile = async (req, res) => {
   try {
-    const profile = await Profile.findOne({ user: req.user.id || req.user });
+    const { userId } = req.params;
+    if (!userId) {
+      return res.status(400).json({ error: "❌ userId is required" });
+    }
+
+    const profile = await Profile.findOne({ user: userId });
 
     if (!profile) {
       return res.status(404).json({ message: "Profile not found" });
     }
 
-    // absolute URL convert
     const result = {
       ...profile.toObject(),
       image: toAbsoluteImageUrl(req, profile.image),
     };
 
-    res.json({ message: "✅ ComProfile fetched", profile: result });
+    res.json({ message: "✅ UserProfile fetched", profile: result });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 };
 
 /**
- * (optional) GET /api/auth/profile/all
- * 🔐 Protected (admin-only ideally): sare profiles list
- * Useful agar list dikhani ho.
+ * GET /api/auth/userprofile/all
+ * 🧾 Returns all user profiles
  */
 exports.getAllUserProfiles = async (req, res) => {
   try {

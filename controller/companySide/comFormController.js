@@ -33,11 +33,10 @@ exports.createComProfile = async (req, res) => {
       address,
       description,
       ...(image && { image }),
-      user: req.user.id || req.user, // depends on your middleware shape
     };
 
     const profile = await Profile.findOneAndUpdate(
-      { user: req.user.id || req.user },
+      { email },
       update,
       { upsert: true, new: true, setDefaultsOnInsert: true }
     );
@@ -61,7 +60,7 @@ exports.createComProfile = async (req, res) => {
  */
 exports.getComProfile = async (req, res) => {
   try {
-    const profile = await Profile.findOne({ user: req.user.id || req.user });
+    const profile = await Profile.findOne({ email });
 
     if (!profile) {
       return res.status(404).json({ message: "Profile not found" });

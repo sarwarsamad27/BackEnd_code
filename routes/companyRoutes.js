@@ -15,20 +15,20 @@ const getCompanyDashboard = require("../controller/companySide/dashboardControll
 // ✅ Product detail routes(Company side)
 router.post("/comregister", comRegister);//ComRegister
 router.post("/comlogin", comLogin);//ComLogin
-router.post("/productentry/productdetail",authMiddleware,upload.array("images", 5), createProductDetail);// create product detail
-router.get("/productentry/productdetail/:brandId", authMiddleware, getProductDetails);// get all product details of logged in user
-router.put("/productentry/productdetail/:id", authMiddleware, upload.array("images", 5), updateProductDetail);// update product detail
-router.delete("/productentry/productdetail/:id", authMiddleware, deleteProductDetail);// delete product detail
-router.get("/orders", authMiddleware, getCompanyOrders);// ✅ get company orders
-router.put("/order/:id/deliver", authMiddleware, markDelivered);// ✅ mark delivered
-router.get("/productentry", authMiddleware, getProducts);//get all products
-router.post("/productentry", authMiddleware, upload.single("image"), createProduct);//product create
-router.put("/product/:id", authMiddleware, upload.single("image"), updateProduct); //  edit
-router.delete("/product/:id", authMiddleware, deleteProduct); //  delete
-router.post("/comprofile", authMiddleware, upload.single("image"), createComProfile);//profile create or update
-router.get("/comprofile", authMiddleware, getComProfile);//get own profile
-router.get("/comprofile/all", authMiddleware, getAllComProfiles);//get all profiles
-router.get("/company/dashboard", authMiddleware, getCompanyDashboard);// get company dashboard data
+router.post("/productentry/productdetail",upload.array("images", 5), createProductDetail);// create product detail
+router.get("/productentry/productdetail/:brandId/:userId",  getProductDetails);// get all product details of logged in user
+router.put("/productentry/productdetail/:id",  upload.array("images", 5), updateProductDetail);// update product detail
+router.delete("/productentry/productdetail/:id/:userId",  deleteProductDetail);// delete product detail
+router.get("/orders/:companyId",  getCompanyOrders);// ✅ get company orders
+router.put("/order/:id/deliver/:companyId",  markDelivered);// ✅ mark delivered
+router.get("/productentry",  getProducts);//get all products
+router.post("/productentry",  upload.single("image"), createProduct);//product create
+router.put("/product/:id",  upload.single("image"), updateProduct); //  edit
+router.delete("/product/:id",  deleteProduct); //  delete
+router.post("/comprofile",  upload.single("image"), createComProfile);//profile create or update
+router.get("/comprofile",  getComProfile);//get own profile
+router.get("/comprofile/all",  getAllComProfiles);//get all profiles
+router.get("/company/dashboard",  getCompanyDashboard);// get company dashboard data
 
 
 module.exports = router;

@@ -10,21 +10,23 @@ const authMiddleware = require("../middleware/authMiddleWare");
 const upload = multer({ dest: "uploads/" });
 const express = require("express");
 const router = express.Router();
+const {getMyOrders , createOrder} = require("../controller/userSide/orderController");
+const {addFavourite , removeFavourite , getFavourites} = require("../controller/userSide/favouriteController");
 
 
 // Public routes(User Side)
 router.post("/userregister", useRegister);//UserRegister
 router.post("/userlogin", userLogin);//UserLogin
-router.post("/userprofile", authMiddleware, upload.single("image"), createUserProfile);//profile create or update
-router.get("/userprofile", authMiddleware, getUserProfile);//get own profile
-router.get("/userprofile/all", authMiddleware, getAllUserProfiles);//get all profiles
+router.post("/userprofile",  upload.single("image"), createUserProfile);//profile create or update
+router.get("/userprofile/:userId",  getUserProfile);//get own profile
+router.get("/userprofile/all",  getAllUserProfiles);//get all profiles
 router.get("/allproducts", getAllProducts);//get all products with company name and image
-router.post("/favourites", authMiddleware, favouriteController.addFavourite);// add to favourites
-router.delete("/favourites/:productId", authMiddleware, favouriteController.removeFavourite);// remove from favourites
-router.get("/favourites", authMiddleware, favouriteController.getFavourites);// get user's favourites
+router.post("/favourites", addFavourite);// add to favourites
+router.delete("/favourites/:userId/:productId",  removeFavourite);// remove from favourites
+router.get("/favourites/:userId", getFavourites);// get user's favourites
 // Order Routes
-router.post("/orders", authMiddleware, orderController.createOrder);// create order
-router.get("/orders", authMiddleware, orderController.getMyOrders);// get user's orders
+router.post("/orders",  createOrder);// create order
+router.get("/orders",  getMyOrders);// get user's orders
 
 
 

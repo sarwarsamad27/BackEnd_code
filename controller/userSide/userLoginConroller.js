@@ -1,10 +1,7 @@
-const JWT_SECRET = "secret123"; // ⚠️ isko .env me rakho
-const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
 const User = require("../../models/userSide/userLoginModel");
 
-
-// ✅ User Login
+// ✅ User Login (no token version)
 exports.userLogin = async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -21,19 +18,12 @@ exports.userLogin = async (req, res) => {
       return res.status(400).json({ message: "❌ Invalid email or password" });
     }
 
-    // Step 3: Generate token
-    const token = jwt.sign(
-      { id: user._id, role: "user" },
-      JWT_SECRET,
-      { expiresIn: "1h" }
-    );
-
+    // ✅ Sirf user data return karo (no token)
     res.json({
       message: "✅ Login successful",
-      token,
       user: {
         id: user._id,
-        email: user.email
+        email: user.email,
       }
     });
   } catch (err) {

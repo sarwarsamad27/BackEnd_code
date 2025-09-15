@@ -14,13 +14,12 @@ exports.getAllProducts = async (req, res) => {
     // saare products nikal lo
     const products = await ProductDetail.find()
       .populate("brand", "brandName") // brand name bhi show hoga
-      .populate("user", "_id")        // user id chahiye to fetch company profile
       .lean();
 
     // har product ke liye us company ka profile nikalna
     const shaped = await Promise.all(
       products.map(async (p) => {
-        const companyProfile = await Profile.findOne({ user: p.user }).lean();
+        const companyProfile = await Profile.findOne({ email: p.email }).lean();
 
         return {
           ...p,

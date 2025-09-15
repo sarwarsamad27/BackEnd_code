@@ -4,8 +4,11 @@ const mongoose = require("mongoose");
 
 exports.getCompanyDashboard = async (req, res) => {
   try {
-    const companyId = req.user.id; // company token se aaega
-    const { type } = req.query; // daily | weekly | monthly
+    const { companyId, type } = req.query; // 🟢 companyId aur type dono query me aayenge
+
+    if (!companyId) {
+      return res.status(400).json({ error: "❌ companyId is required" });
+    }
 
     // 1️⃣ Total Products
     const totalProducts = await ProductDetail.countDocuments({ company: companyId });
@@ -85,7 +88,13 @@ exports.getCompanyDashboard = async (req, res) => {
       },
       { $unwind: "$productInfo" },
       { $match: { "productInfo.company": new mongoose.Types.ObjectId(companyId) } },
-      { $group: { ...groupStage, revenue: { $sum: { $multiply: ["$products.quantity", "$productInfo.price"] } }, orders: { $sum: 1 } } },
+      {
+        $group: {
+          ...groupStage,
+          revenue: { $sum: { $multiply: ["$products.quantity", "$productInfo.price"] } },
+          orders: { $sum: 1 }
+        }
+      },
       { $sort: { "_id": 1 } }
     ]);
 

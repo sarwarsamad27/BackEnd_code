@@ -1,13 +1,10 @@
 const bcrypt = require("bcryptjs");
-const jwt = require("jsonwebtoken");
 const Company = require("../../models/companySide/comLoginModel");
 
-const JWT_SECRET = "secret123"; // ⚠️ .env me rakhna recommended
-
-// Company Login
+// ✅ Company Login (without token)
 exports.comLogin = async (req, res) => {
   try {
-    const { email, password } = req.body; // name ki zaroorat login ke liye nahi
+    const { email, password } = req.body;
 
     // Step 1: Email check
     const company = await Company.findOne({ email });
@@ -21,17 +18,9 @@ exports.comLogin = async (req, res) => {
       return res.status(400).json({ message: "Invalid email or password" });
     }
 
-    // Step 3: JWT token
-    const token = jwt.sign(
-      { id: company._id, role: "company" }, // role future me authorization ke liye
-      JWT_SECRET,
-      { expiresIn: "1h" }
-    );
-
-    // Step 4: Response
+    // ✅ Sirf company data return karo (no token)
     res.json({
       message: "✅ Company login successful",
-      token,
       company: {
         id: company._id,
         name: company.name,

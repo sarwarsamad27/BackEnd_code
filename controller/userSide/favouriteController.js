@@ -8,49 +8,57 @@ const toAbsoluteUrl = (req, filePath) => {
   return `${req.protocol}://${req.get("host")}/${filePath.replace(/\\/g, "/")}`;
 };
 
-// ✅ Add to Favourite
+// ✅ Add to Favourite (no auth)
 exports.addFavourite = async (req, res) => {
   try {
-    const { productId } = req.body;
-    if (!productId) {
-      return res.status(400).json({ error: "❌ productId is required" });
+    const { userId, productId } = req.body;
+    if (!userId || !productId) {
+      return res.status(400).json({ error: "❌ userId and productId are required" });
     }
 
-    const fav = new Favourite({ user: req.user.id, product: productId });
+    const fav = new Favourite({ user: userId, product: productId });
     await fav.save();
 
     res.status(201).json({ message: "✅ Product added to favourites" });
   } catch (err) {
     if (err.code === 11000) {
-      // duplicate key error (already favourited)
       return res.status(400).json({ error: "❌ Already in favourites" });
     }
     res.status(500).json({ error: err.message });
   }
 };
 
-// ✅ Remove from Favourite
+// ✅ Remove from Favourite (no auth)
 exports.removeFavourite = async (req, res) => {
   try {
-    const { productId } = req.params;
-    await Favourite.findOneAndDelete({ user: req.user.id, product: productId });
+    const { userId, productId } = req.params;
+    if (!userId || !productId) {
+      return res.status(400).json({ error: "❌ userId and productId are required" });
+    }
+
+    await Favourite.findOneAndDelete({ user: userId, product: productId });
     res.json({ message: "🗑️ Removed from favourites" });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 };
 
-// ✅ Get User's Favourites (with product + company info)
+// ✅ Get User's Favourites (with product + company info) — no auth
 exports.getFavourites = async (req, res) => {
   try {
-    const favourites = await Favourite.find({ user: req.user.id })
+    const { userId } = req.params;
+    if (!userId) {
+      return res.status(400).json({ error: "❌ userId is required" });
+    }
+
+    const favourites = await Favourite.find({ user: userId })
       .populate("product")
       .lean();
 
     const shaped = await Promise.all(
       favourites.map(async (f) => {
         const product = f.product;
-        const companyProfile = await Profile.findOne({ user: product.user }).lean();
+        const companyProfile = await Profile.findOne({ email: product.email }).lean();
 
         return {
           _id: f._id,

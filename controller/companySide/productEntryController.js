@@ -9,18 +9,21 @@ const toAbsoluteImageUrl = (req, imagePath) => {
 
 /**
  * POST /api/product
- * 🔐 Protected
- * 📥 Body: form-data { name, image(file) }
+ * 📥 Body: form-data { name, image(file), userId }
  */
 exports.createProduct = async (req, res) => {
   try {
-    const { name } = req.body;
+    const { name, userId } = req.body;
     const image = req.file ? req.file.path : null;
 
-    // ⚡ Pehle check karo ke same user ke pass same naam ka product to nahi hai
-    const existingProduct = await Product.findOne({ 
-      name: name, 
-      user: req.user.id 
+    if (!name || !userId) {
+      return res.status(400).json({ message: "❌ name and userId are required" });
+    }
+
+    // Pehle check karo ke same user ke pass same naam ka product to nahi hai
+    const existingProduct = await Product.findOne({
+      name: name,
+      user: userId,
     });
 
     if (existingProduct) {
@@ -31,31 +34,35 @@ exports.createProduct = async (req, res) => {
     const product = new Product({
       name,
       image,
-      user: req.user.id,
+      user: userId,
     });
 
     await product.save();
     res.status(201).json({ message: "✅ Product created", product });
-
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 };
 
-
-
 /**
  * GET /api/product
- * 🔐 Protected
- * 🧾 Get all products
+ * 🧾 Get all products for a user
+ * Query/body se userId lena hoga
  */
 exports.getProducts = async (req, res) => {
   try {
-    const products = await Product.find({ user: req.user.id }).lean();
+    const { userId } = req.query; // ya body se bhi bhej sakte ho
+    if (!userId) {
+      return res.status(400).json({ message: "❌ userId is required" });
+    }
+
+    const products = await Product.find({ user: userId }).lean();
 
     const shaped = products.map((p) => ({
       ...p,
-      image: p.image ? `${req.protocol}://${req.get("host")}/${p.image.replace(/\\/g, "/")}` : null,
+      image: p.image
+        ? `${req.protocol}://${req.get("host")}/${p.image.replace(/\\/g, "/")}`
+        : null,
     }));
 
     res.json({ count: shaped.length, products: shaped });
@@ -64,17 +71,19 @@ exports.getProducts = async (req, res) => {
   }
 };
 
-
-
 // ✅ UPDATE
 exports.updateProduct = async (req, res) => {
   try {
     const { id } = req.params; // Product ka id URL se ayega
-    const { name } = req.body;
+    const { name, userId } = req.body;
     const image = req.file ? req.file.path : undefined;
 
-    // Sirf us user ke product ko update karne ki permission
-    const product = await Product.findOne({ _id: id, user: req.user.id });
+    if (!userId) {
+      return res.status(400).json({ message: "❌ userId is required" });
+    }
+
+    // Sirf us user ke product ko update karega
+    const product = await Product.findOne({ _id: id, user: userId });
     if (!product) {
       return res.status(404).json({ message: "❌ Product not found" });
     }
@@ -94,8 +103,13 @@ exports.updateProduct = async (req, res) => {
 exports.deleteProduct = async (req, res) => {
   try {
     const { id } = req.params;
+    const { userId } = req.body;
 
-    const product = await Product.findOneAndDelete({ _id: id, user: req.user.id });
+    if (!userId) {
+      return res.status(400).json({ message: "❌ userId is required" });
+    }
+
+    const product = await Product.findOneAndDelete({ _id: id, user: userId });
     if (!product) {
       return res.status(404).json({ message: "❌ Product not found" });
     }
@@ -104,4 +118,4 @@ exports.deleteProduct = async (req, res) => {
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
-};  
+};
