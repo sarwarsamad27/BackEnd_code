@@ -1,5 +1,5 @@
 const router = require("express").Router();
-const authMiddleware = require("../middleware/authMiddleWare");
+// const authMiddleware = require("../middleware/authMiddleWare");
 const { createComProfile, getComProfile, getAllComProfiles } = require("../controller/companySide/comFormController");
 const { createProductDetail, getProductDetails , deleteProductDetail , updateProductDetail } = require("../controller/companySide/productDetailController");
 const  {createProduct , getProducts ,deleteProduct , updateProduct}   = require("../controller/companySide/productEntryController"); 
@@ -16,7 +16,7 @@ const getCompanyDashboard = require("../controller/companySide/dashboardControll
 router.post("/comregister", comRegister);//ComRegister
 router.post("/comlogin", comLogin);//ComLogin
 router.post("/productentry/productdetail",upload.array("images", 5), createProductDetail);// create product detail
-router.get("/productentry/productdetail/:brandId/:userId",  getProductDetails);// get all product details of logged in user
+router.get("/productentry/productdetail",  getProductDetails);// get all product details of logged in user
 router.put("/productentry/productdetail/:id",  upload.array("images", 5), updateProductDetail);// update product detail
 router.delete("/productentry/productdetail/:id/:userId",  deleteProductDetail);// delete product detail
 router.get("/orders/:companyId",  getCompanyOrders);// ✅ get company orders

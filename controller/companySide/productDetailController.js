@@ -40,7 +40,7 @@ exports.createProductDetail = async (req, res) => {
 // ✅ Get products of a specific brand (no token)
 exports.getProductDetails = async (req, res) => {
   try {
-    const { brandId, userId } = req.query;
+    const { brandId, userId } = req.params;
 
     if (!brandId || !userId) {
       return res.status(400).json({ error: "❌ brandId and userId are required" });
