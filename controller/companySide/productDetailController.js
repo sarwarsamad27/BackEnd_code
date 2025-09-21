@@ -59,6 +59,27 @@ exports.getProductDetails = async (req, res) => {
   }
 };
 
+
+
+// ✅ Get all products (no filter, open API)
+exports.getAllProducts = async (req, res) => {
+  try {
+    const products = await ProductDetail.find().lean();
+
+    const shaped = products.map(p => ({
+      ...p,
+      images: p.images.map(img => toAbsoluteUrl(req, img)),
+    }));
+
+    res.json({ count: shaped.length, products: shaped });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+
+
+
 // ✅ Update Product by ID (no token)
 exports.updateProductDetail = async (req, res) => {
   try {
