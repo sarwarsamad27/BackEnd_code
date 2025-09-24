@@ -15,9 +15,9 @@ exports.createOrder = async (req, res) => {
       return res.status(400).json({ error: "❌ Products are required" });
     }
 
-    // ✅ order create in DB
+    // ✅ order create in DB (save as "userId", not "user")
     const order = await Order.create({
-      user: userId,
+      userId,
       name,
       email,
       phone,
@@ -42,10 +42,13 @@ exports.createOrder = async (req, res) => {
         const subtotal = dbProduct.price * item.quantity;
         totalAmount += subtotal;
 
+        // ✅ add product with image for summary
         productListHtml += `
-          <li>
-            ${dbProduct.productName}  
-            (Qty: ${item.quantity}) - 
+          <li style="margin-bottom:15px;list-style:none;">
+            <img src="${dbProduct.images[0]}" alt="${dbProduct.productName}" 
+                 style="width:80px;height:80px;object-fit:cover;border-radius:8px;margin-right:10px;"/>
+            <b>${dbProduct.productName}</b><br/>
+            Qty: ${item.quantity}<br/>
             Price: ${dbProduct.price} x ${item.quantity} = <b>${subtotal}</b>
           </li>`;
 
@@ -67,6 +70,9 @@ exports.createOrder = async (req, res) => {
                 <li>Quantity: ${item.quantity}</li>
                 <li>Total Paid: ${subtotal}</li>
               </ul>
+              <img src="${dbProduct.images[0]}" 
+                   alt="${dbProduct.productName}" 
+                   style="width:120px;height:120px;object-fit:cover;border-radius:8px;"/>
               <hr>
               <p>Please process this order from your dashboard.</p>
             `,
@@ -122,7 +128,7 @@ exports.getMyOrders = async (req, res) => {
       return res.status(400).json({ error: "❌ userId is required" });
     }
 
-    const orders = await Order.find({ user: userId }).populate("products.product");
+    const orders = await Order.find({ userId }).populate("products.product");
     res.json({ count: orders.length, orders });
   } catch (err) {
     res.status(500).json({ error: err.message });
