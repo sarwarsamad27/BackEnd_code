@@ -121,15 +121,60 @@ exports.createOrder = async (req, res) => {
 };
 
 // ✅ user ke orders get — no auth
+// ✅ user ke orders get by userId
 exports.getMyOrders = async (req, res) => {
   try {
-    const { userId } = req.params;
+    const { userId } = req.query;
     if (!userId) {
       return res.status(400).json({ error: "❌ userId is required" });
     }
 
-    const orders = await Order.find({ userId }).populate("products.product");
-    res.json({ count: orders.length, orders });
+    // Step 1: get orders
+    const orders = await Order.find({ userId })
+      .populate({
+        path: "products.product",
+        populate: [
+          { path: "user", select: "email" }, // base User
+          { path: "brand", select: "productName" }, // brand info
+        ],
+      })
+      .sort({ createdAt: -1 });
+
+    // Step 2: attach seller profile info (name, image, etc.)
+    const ordersWithSeller = await Promise.all(
+      orders.map(async (order) => {
+        const productsWithSeller = await Promise.all(
+          order.products.map(async (p) => {
+            if (p.product?.user?._id) {
+              const sellerProfile = await ComProfile.findOne({
+                user: p.product.user._id,
+              }).lean();
+
+              if (sellerProfile) {
+                return {
+                  ...p.toObject(),
+                  seller: {
+                    name: sellerProfile.name,
+                    email: sellerProfile.email,
+                    image: sellerProfile.image
+                      ? `${req.protocol}://${req.get("host")}/${sellerProfile.image.replace(/\\/g, "/")}`
+                      : null,
+                  },
+                };
+              }
+            }
+            return p;
+          })
+        );
+
+        return {
+          ...order.toObject(),
+          products: productsWithSeller,
+        };
+      })
+    );
+
+    res.json({ count: ordersWithSeller.length, orders: ordersWithSeller });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
