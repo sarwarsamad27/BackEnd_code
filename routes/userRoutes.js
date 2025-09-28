@@ -25,7 +25,7 @@ router.post("/favourites", addFavourite);// add to favourites
 router.delete("/favourites/:userId/:productId",  removeFavourite);// remove from favourites
 router.get("/favourites/:userId", getFavourites);// get user's favourites
 // Order Routes
-router.post("/orders",  createOrder);// create order
+router.post("/user/orders",  createOrder);// create order
 router.get("/orders",  getMyOrders);// get user's orders
 
 
