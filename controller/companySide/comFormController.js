@@ -62,8 +62,9 @@ exports.createComProfile = async (req, res) => {
 
 exports.getComProfile = async (req, res) => {
   try {
-    // agar login wala user ka data chahiye to req.user se lo
-    const email = req.user?.email; // <-- authMiddleware se aata hai
+    // pehle query se lo, agar query me na ho to req.user se lo
+    const email = req.query.email || req.user?.email;
+
     if (!email) {
       return res.status(400).json({ message: "Email not found in request" });
     }
@@ -74,7 +75,6 @@ exports.getComProfile = async (req, res) => {
       return res.status(404).json({ message: "Profile not found" });
     }
 
-    // image ko hamesha absolute URL me convert karo
     const result = {
       ...profile.toObject(),
       image: toAbsoluteImageUrl(req, profile.image),
@@ -85,6 +85,7 @@ exports.getComProfile = async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 };
+
 
 /**
  * (optional) GET /api/auth/profile/all
